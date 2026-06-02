@@ -83,11 +83,16 @@ Output format (strictly follow this schema):
 
 last_comment is FULL text — never truncate. Use due_iso for accurate calendar bucketing.
 
-## STEP 8 — Post Slack ping to pm-project-management-workinx (slack_send_message)
-Message (4 lines):
+## STEP 8 — Render the HTML and deliver to Slack (YOU do this — no GitHub Actions, no API key)
+You are the routine; you already have ClickUp and Slack connected. Do the whole pipeline yourself:
+1. Write the STEP 7 JSON blob to `{{PM_NAME_LOWER}}_eod.json`.
+2. Make sure the renderer is present. If `render.py` / `template.html` are not in the working dir, clone the tool:
+   `git clone https://github.com/SahilCharan/workinx-pm-intelligence tool && cd tool` (or `git pull`).
+3. Render (zero tokens): `python3 render.py {{PM_NAME_LOWER}}_eod.json {{PM_NAME_LOWER}}_eod_report.html`
+4. Upload the HTML file to {{PM_NAME}}'s Slack channel (slack_channel_id in `routines/{{PM_NAME_LOWER}}.json`) using the already-connected Slack file upload, with this initial comment (4 lines):
 📋 EOD Report ready for {{PM_NAME}} — [N] tasks | Health: [HEALTH_ICON]
 🏆 [X] wins today · 🚨 [X] escalations · 🔁 [X] follow-ups due (48h) · ⚠️ [X] incomplete
 🕐 Oldest stuck: [TASK NAME] — [days_stale]d in same status
-📊 Full report attached below.
+📊 Full interactive report attached.
 
-OUTPUT THE JSON FIRST, THEN POST SLACK. NOTHING ELSE.
+OUTPUT THE JSON FIRST, THEN RENDER + UPLOAD THE HTML. NOTHING ELSE.

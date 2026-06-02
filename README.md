@@ -6,14 +6,20 @@ branded, filterable HTML report that is posted to each PM's Slack channel.
 
 > SOP this tool follows: **https://externalsop.workinxdigital.com**
 
-## Pipeline
+## How it runs
+A single **Claude routine** (scheduled remote agent) does the whole thing. It already has
+ClickUp and Slack connected via MCP — so there is **no Anthropic API key** and **no separate
+Slack bot token** to manage. The routine: reads ClickUp → emits the JSON blob → runs
+`render.py` (zero tokens) → uploads the HTML to the PM's Slack channel → posts the ping.
+
 ```
-ClickUp ──▶ Claude (routines/*-prompt-template.md) ──▶ compact JSON
-                                                          │
-                                                render.py │ (zero tokens)
-                                                          ▼
-                                                   template.html  ──▶ Slack (upload_slack.sh)
+                  ┌──────────────── one Claude routine ────────────────┐
+ClickUp (MCP) ──▶ │ prompt → compact JSON → render.py → template.html   │ ──▶ Slack (MCP upload)
+                  └─────────────────────────────────────────────────────┘
 ```
+
+`run.sh` + `upload_slack.sh` are **only** for running the pipeline manually/locally outside the
+routine (they use `SLACK_BOT_TOKEN`). The routine itself does not need them.
 
 ## Files
 | File | Purpose |
