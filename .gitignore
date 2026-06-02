@@ -1,0 +1,21 @@
+# Generated reports (render.py output)
+*_report.html
+report.html
+index.html
+
+# Routine payloads pulled at runtime
+*_morning.json
+*_eod.json
+routine_response.json
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Local preview/dev
+_script_check.js
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db

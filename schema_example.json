@@ -1,0 +1,96 @@
+{
+  "pm_name": "Kavitha",
+  "report_type": "MORNING BRIEF",
+  "date_label": "Tuesday, 02 Jun 2026",
+  "date_iso": "2026-06-02",
+  "generated_at": "02 Jun 2026, 10:30 AM IST",
+  "health": "RED",
+  "brands": [
+    {
+      "name": "Amazon",
+      "tasks": [
+        {
+          "id": "abc123xyz",
+          "name": "Amazon | A+ Content — Hero Banner Set",
+          "status": "sent for approval",
+          "due_date": "OVERDUE 3 days",
+          "due_iso": "2026-05-30",
+          "assignee": "Anuvrath",
+          "days_stale": 9,
+          "url": "https://app.clickup.com/t/abc123xyz",
+          "flags": ["ESCALATION", "SEND_NOW", "OVERDUE"],
+          "last_comment": "Tiz (client, 2h ago): We discussed this on the call last week and still haven't received the revised hero banners. This is now blocking our Prime Day prep — can you confirm exactly when the full set will be delivered? We need at least 48 hours to review internally before the freeze on the 6th.",
+          "reply_draft": "Hi Tiz — apologies for the delay on the hero banner set. The revised banners are in final QA now and I'll have the complete set to you by 3 PM IST today, which gives you a clear runway before the 6th freeze. I'll personally confirm here the moment they're live in the shared folder.",
+          "action": "Chase Anuvrath for final QA by 1 PM. Escalate to PM Lead if not ready. Post delivery summary the moment banners are shared."
+        },
+        {
+          "id": "amz222def",
+          "name": "Amazon | Storefront Refresh — May Module",
+          "status": "assets needed",
+          "due_date": "Today",
+          "due_iso": "2026-06-02",
+          "assignee": "Mansi",
+          "days_stale": 2,
+          "url": "https://app.clickup.com/t/amz222def",
+          "flags": ["FOLLOWUP_DUE", "CLIENT_WAITING"],
+          "last_comment": "PM (you, 2 days ago): Hi Tiz, to start the storefront refresh we need the updated brand logo (vector) and the 3 lifestyle photos we discussed. Could you share these when you get a chance?",
+          "reply_draft": null,
+          "followup_draft": "Hi Tiz — just a gentle follow-up on the storefront refresh. We're still missing the vector logo and the 3 lifestyle photos to get started. As soon as they land, we'll move this into production the same day. If they're delayed, let me know and I'll plan the timeline around it.",
+          "action": "48h since asset request with no client reply — send follow-up nudge per SOP and set a fresh 24h reminder."
+        }
+      ]
+    },
+    {
+      "name": "Mindful Goods",
+      "tasks": [
+        {
+          "id": "def456uvw",
+          "name": "Mindful Goods | Blog Post June",
+          "status": "changes done",
+          "due_date": "Tomorrow",
+          "due_iso": "2026-06-03",
+          "assignee": "Dhruv",
+          "days_stale": 1,
+          "url": "https://app.clickup.com/t/def456uvw",
+          "flags": ["NEEDS_PM_REVIEW", "DUE_TOMORROW"],
+          "last_comment": "Dhruv (team, 14h ago): Changes done as per the last round of client feedback, ready for your review before it goes back.",
+          "reply_draft": null,
+          "action": "Review changes vs client's last feedback, then send for approval with a short delivery summary."
+        },
+        {
+          "id": "ghi789rst",
+          "name": "Mindful Goods | Instagram Reels Q2",
+          "status": "under client review",
+          "due_date": "04 Jun 2026",
+          "due_iso": "2026-06-04",
+          "assignee": "Mansi",
+          "days_stale": 4,
+          "url": "https://app.clickup.com/t/ghi789rst",
+          "flags": ["DUE_SOON"],
+          "last_comment": "PM (you, 4 days ago): Sent the Q2 reels pack for your review — happy to jump on a quick call if useful.",
+          "reply_draft": null,
+          "followup_draft": "Hi Tiz — checking in on the Q2 reels pack we sent over. Any feedback so far, or are we good to schedule? Keen to keep this on track for the Q2 calendar.",
+          "action": "Client review window almost at 48h — queue a follow-up if no reply by EOD."
+        }
+      ]
+    },
+    {
+      "name": "NZ Honey Co",
+      "tasks": [
+        {
+          "id": "win999aaa",
+          "name": "NZ Honey Co | Packaging Shots — April",
+          "status": "approved today",
+          "due_date": "No due date",
+          "assignee": "Anuvrath",
+          "days_stale": 0,
+          "url": "https://app.clickup.com/t/win999aaa",
+          "flags": ["WIN"],
+          "last_comment": "Tiz (client, 1h ago): These look fantastic, approved! Thanks team.",
+          "reply_draft": null,
+          "action": "Mark approved, archive, and note the win in EOD."
+        }
+      ]
+    }
+  ]
+}

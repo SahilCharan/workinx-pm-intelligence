@@ -1,0 +1,53 @@
+name: WorkinX Morning Brief — Kavitha
+
+on:
+  schedule:
+    - cron: '0 5 * * 1-5'   # 10:30 AM IST = 05:00 UTC, Mon-Fri
+  workflow_dispatch:          # allow manual trigger
+
+jobs:
+  morning-brief-kavitha:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Trigger Claude remote routine & capture JSON
+        id: claude
+        run: |
+          # The routine runs the morning prompt (routines/morning-prompt-template.md)
+          # against Kavitha's ClickUp list and returns the compact JSON blob.
+          # Routine ID: trig_01XE5ZfSGzAsJSMPFtBUQok4
+          # NOTE: the routine must write its JSON to kavitha_morning.json (last line
+          # of its prompt). We capture the API response body here.
+          curl -s -X POST "https://api.anthropic.com/v1/routines/trig_01XE5ZfSGzAsJSMPFtBUQok4/run" \
+            -H "x-api-key: ${{ secrets.ANTHROPIC_API_KEY }}" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "Content-Type: application/json" \
+            -d '{}' -o routine_response.json
+          # Extract the JSON blob the routine produced into kavitha_morning.json.
+          # (Adjust the jq path to match the routine output envelope.)
+          jq -r '.output // .result // .content // empty' routine_response.json > kavitha_morning.json || cp routine_response.json kavitha_morning.json
+          test -s kavitha_morning.json || { echo "::error::routine returned empty JSON"; cat routine_response.json; exit 1; }
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Render HTML from JSON
+        run: |
+          python3 render.py kavitha_morning.json kavitha_morning_report.html
+
+      - name: Upload HTML to Slack
+        run: |
+          bash upload_slack.sh \
+            kavitha_morning_report.html \
+            "${{ secrets.SLACK_KAVITHA_CHANNEL }}" \
+            "🌅 Morning Brief — Kavitha | $(date +'%d %b %Y')"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
