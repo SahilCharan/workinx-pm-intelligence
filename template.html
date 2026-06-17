@@ -163,7 +163,7 @@ function actionVal(t){return t.action||t.pm_action||'';}
 
 function taskClass(flags){
   if(!flags||!flags.length) return 'on-hold';
-  if(flags.indexOf('ESCALATION')>-1||flags.indexOf('CLIENT_WAITING')>-1||flags.indexOf('SLA_BREACH')>-1||flags.indexOf('SEND_NOW')>-1) return 'escalation';
+  if(flags.indexOf('ESCALATION')>-1||flags.indexOf('ASSETS_ESCALATE')>-1||flags.indexOf('CLIENT_WAITING')>-1||flags.indexOf('SLA_BREACH')>-1||flags.indexOf('SEND_NOW')>-1) return 'escalation';
   if(flags.indexOf('CLIENT_REPLIED')>-1) return 'ready';
   if(flags.indexOf('FOLLOWUP_DUE')>-1||flags.indexOf('OVERDUE_TODAY')>-1||flags.indexOf('OVERDUE')>-1||flags.indexOf('INCOMPLETE')>-1||flags.indexOf('BLOCKED')>-1||flags.indexOf('URGENT')>-1) return 'needs-action';
   if(flags.indexOf('PROTOCOL_BREACH')>-1) return 'needs-action';
@@ -175,6 +175,8 @@ function flagTag(f){
   var m={
     'CLIENT_REPLIED':'<span class="tag t-green">💬 Client Replied</span>',
     'ESCALATION':'<span class="tag t-esc">🚨 Escalation</span>',
+    'ASSETS_ESCALATE':'<span class="tag t-esc">🚨 Assets: Escalate to PM Lead</span>',
+    'ASSETS_FOLLOWUP':'<span class="tag t-amber">📋 Assets: Follow-up Needed</span>',
     'CLIENT_WAITING':'<span class="tag t-esc">🔴 Client Waiting</span>',
     'SLA_BREACH':'<span class="tag t-esc">⏱ SLA Breach</span>',
     'SEND_NOW':'<span class="tag t-esc">📤 Send Now</span>',
@@ -187,8 +189,9 @@ function flagTag(f){
     'BLOCKED':'<span class="tag t-amber">🚧 Blocked</span>',
     'STALE':'<span class="tag t-amber">🕐 Stale</span>',
     'NEEDS_PM_REVIEW':'<span class="tag t-blue">👁 Review</span>',
+    'STATUS_MISMATCH':'<span class="tag t-purple">⚠️ Status Mismatch</span>',
     'WIN':'<span class="tag t-green">🏆 Win</span>',
-    'PROTOCOL_BREACH':'<span class="tag t-purple">🔁 No Comment</span>',
+    'PROTOCOL_BREACH':'<span class="tag t-purple">🔕 No Delivery Comment</span>',
     'INCOMPLETE':'<span class="tag t-amber">⚠️ Incomplete</span>'
   };
   return m[f]||'<span class="tag t-gray">'+x(f)+'</span>';
@@ -289,8 +292,9 @@ function buildHTML(){
 
       var cls=taskClass(flags);
       var flagStr=flags.join(',');
+      var primary=primaryFlag(flags);
       var brandLower=((brand.name||'')+' '+(t.name||'')).toLowerCase();
-      var isEsc=(flags.indexOf('ESCALATION')>-1)?'1':'0';
+      var isEsc=(flags.indexOf('ESCALATION')>-1||flags.indexOf('ASSETS_ESCALATE')>-1)?'1':'0';
 
       var nameParts=(t.name||'').split('|');
       var brandPart=nameParts[0].trim();
@@ -299,7 +303,7 @@ function buildHTML(){
       var stale=Number(t.days_stale||0);
       var staleCol=stale>7?'var(--red)':stale>3?'var(--amber)':'var(--gray)';
 
-      html+='<div class="task '+cls+'" id="task-'+x(t.id||'')+'" data-flags="'+x(flagStr)+'" data-brand="'+x(brandLower)+'" data-esc="'+isEsc+'">';
+      html+='<div class="task '+cls+'" id="task-'+x(t.id||'')+'" data-flags="'+x(flagStr)+'" data-primary="'+x(primary)+'" data-brand="'+x(brandLower)+'" data-esc="'+isEsc+'">';
 
       // ── TASK HEAD ────────────────────────────────────────────────
       html+='<div class="task-head">';
@@ -403,14 +407,36 @@ function buildHTML(){
   renumber();
 }
 
-// ── live counts on each filter button ──
+// ── priority order: determines which flag "owns" a task in exclusive filter mode ──
+var FLAG_PRIORITY=['ASSETS_ESCALATE','ESCALATION','SLA_BREACH','OVERDUE','CLIENT_REPLIED','FOLLOWUP_DUE','ASSETS_FOLLOWUP','CLIENT_WAITING','URGENT','DUE_SOON','BLOCKED','PROTOCOL_BREACH','STATUS_MISMATCH','STALE','WIN','SEND_NOW','NEEDS_PM_REVIEW','INCOMPLETE'];
+// maps filter button → which primary flags qualify (exclusive bucketing, no duplicates)
+var FILTER_MAP={
+  'ESCALATION':['ESCALATION','ASSETS_ESCALATE'],
+  'FOLLOWUP_DUE':['FOLLOWUP_DUE','ASSETS_FOLLOWUP'],
+  'CLIENT_REPLIED':['CLIENT_REPLIED'],
+  'CLIENT_WAITING':['CLIENT_WAITING'],
+  'SLA_BREACH':['SLA_BREACH'],
+  'OVERDUE':['OVERDUE'],
+  'BLOCKED':['BLOCKED'],
+  'URGENT':['URGENT'],
+  'SEND_NOW':['SEND_NOW'],
+  'NEEDS_PM_REVIEW':['NEEDS_PM_REVIEW','PROTOCOL_BREACH','STATUS_MISMATCH'],
+  'WIN':['WIN']
+};
+function primaryFlag(flags){
+  if(!flags||!flags.length) return '';
+  for(var i=0;i<FLAG_PRIORITY.length;i++){if(flags.indexOf(FLAG_PRIORITY[i])>-1)return FLAG_PRIORITY[i];}
+  return flags[0];
+}
+
+// ── live counts on each filter button (exclusive: each task counted once) ──
 function setFilterCounts(){
   var tasks=[...document.querySelectorAll('.task')];
   document.querySelectorAll('.fbtn').forEach(function(b){
     var flag=b.dataset.flag;
     var base=b.textContent.replace(/\s*\(\d+\)\s*$/,'');
-    var n = flag==='ALL' ? tasks.length
-          : tasks.filter(function(t){return (t.dataset.flags||'').split(',').indexOf(flag)>-1;}).length;
+    var group=FILTER_MAP[flag]||[flag];
+    var n=flag==='ALL'?tasks.length:tasks.filter(function(t){return group.indexOf(t.dataset.primary)>-1;}).length;
     b.textContent=base+' ('+n+')';
   });
 }
@@ -428,13 +454,14 @@ function renumber(){
   if(s) s.textContent=n+' task'+(n!==1?'s':'');
 }
 
+// ── exclusive filter: each task appears in exactly one bucket ──
 function doFilter(f,btn){
   document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   document.getElementById('srch').value='';
+  var group=FILTER_MAP[f]||[f];
   document.querySelectorAll('.task').forEach(t=>{
-    var flags=(t.dataset.flags||'').split(',');
-    var show=f==='ALL'||flags.indexOf(f)>-1;
+    var show=f==='ALL'||group.indexOf(t.dataset.primary)>-1;
     t.classList.toggle('hidden',!show);
   });
   document.querySelectorAll('.brand-section').forEach(sec=>{
